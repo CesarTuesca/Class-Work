@@ -2,20 +2,14 @@ package application;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.HttpRetryException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Scanner;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -24,39 +18,70 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
-
+/**
+ * 
+ * @author Cesar
+ *
+ */
 public class Controller implements Initializable {
-	ArrayList<String> keys = new ArrayList<String>();
-	ArrayList<Integer> values = new ArrayList<Integer>();
+	/**
+	 *  Observable List for keys "words"
+	 */
+	public ObservableList<String> keys = FXCollections.observableArrayList();
+	/**
+	 *  Observable List for values "frequencies"
+	 */
+	public ObservableList<Integer> values = FXCollections.observableArrayList();
 	@FXML
+	/**
+	 *  Create ListView for words
+	 */
 	public ListView<String> wordsListView;
+	/**
+	 *  Create ListView for frequencies
+	 */
 	public ListView<Integer> frequencyListView;
-	
+	/**
+	 *  Create label to display the file address to ensure the right file was selected
+	 */
 	public Label labSingleFile;
+	/**
+	 *  Create button to clear the ListViews to enable the user to read in another file
+	 */
+	public Button clearButton;
+	/**
+	 *  Create button to open directory for file choosing
+	 */
+	public Button selectFileButton;
+	
 	
 	@Override
-	public void initialize(URL arg0, ResourceBundle arg1) {
 	
+	public void initialize(URL arg0, ResourceBundle arg1) {
+		
 		wordsListView.getItems().addAll(keys);
 		frequencyListView.getItems().addAll(values);
-		
+		clearButton.setOnAction(this::handleClearButton);
 		
 	}	
 	
+	@FXML
+	/**
+	 * @param e
+	 * @throws IOException
+	 */
 	public void textSelect(ActionEvent e) throws IOException {
 		FileChooser fc = new FileChooser();
 		fc.getExtensionFilters().add(new ExtensionFilter("Text Files", "*.txt"));
 		File f = fc.showOpenDialog(null);
 		
 		if (f != null) {
-			labSingleFile.setText("Selected File: " + f.getAbsolutePath());
+			labSingleFile.setText("Top 20 Words in Selected File: " + f.getAbsolutePath());
 			BufferedReader bufferedReader = new BufferedReader(new FileReader(f.getAbsolutePath()));
 			
 			/**
@@ -70,7 +95,7 @@ public class Controller implements Initializable {
 			*/
 			while ((currentLine = bufferedReader.readLine()) != null) {
 
-				String[] words = currentLine.split("[\\s.;”“,+:—?!()\"'—]", -5);
+				String[] words = currentLine.split("[\\s.;,+:—?!()\"'—]", -5);
 				/**
 				   For every word in the "words" array, trim spaces and input into hash map "wordCounts"
 				*/
@@ -124,8 +149,8 @@ public class Controller implements Initializable {
 				
 			}
 			
-			wordsListView.getItems().addAll(keys);
-			frequencyListView.getItems().addAll(values);
+			wordsListView.getItems().addAll(keys.subList(0, Math.min(20, keys.size())));
+			frequencyListView.getItems().addAll(values.subList(0, Math.min(20, values.size())));
 			
 			System.out.println(keys);
 			System.out.println(values);
@@ -133,6 +158,19 @@ public class Controller implements Initializable {
 		}
 
 		}
+	
+	@FXML
+	/**
+	 * 
+	 * @param event for clearing the label, hashmap, and listviews
+	 */
+	public void handleClearButton(ActionEvent event) {
+		keys.clear();
+		values.clear();
+		wordsListView.getItems().clear();
+		frequencyListView.getItems().clear();
+		labSingleFile.setText("");
+	}
 			
 		
 		
